@@ -48,6 +48,7 @@ public class UserLoginServlet extends HttpServlet{
             req.setAttribute("msg",e.getMessage());
             req.getRequestDispatcher("login.jsp").forward(req,resp);
         } catch (Exception e){
+            e.printStackTrace();
             resp.sendRedirect("error.jsp");
         }
    }
