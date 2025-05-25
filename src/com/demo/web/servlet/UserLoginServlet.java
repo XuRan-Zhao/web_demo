@@ -26,23 +26,33 @@ public class UserLoginServlet extends HttpServlet{
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String username = req.getParameter("username");
         String password = req.getParameter("userpwd");
+        String code = req.getParameter("code");
         try {
-            UserLoginService userLoginService = new UserLoginImpl();
-            Users users = userLoginService.userLogin(username,password);
-            //建立客户端与会话端的状态
             HttpSession session = req.getSession();
-            session.setAttribute(Constants.USER_SESSION_KEY,users);
+//           getAttribute  Servlet 转发到 JSP 时共享数据
+            String codeTemp = (String) session.getAttribute(Constants.VALIDAT_CODE_KEY);
+            if(codeTemp.equals(code)){
+                UserLoginService userLoginService = new UserLoginImpl();
+                Users users = userLoginService.userLogin(username,password);
+                //建立客户端与会话端的状态
 
-            ServletContext servletContext = this.getServletContext();
-            HttpSession temp = (HttpSession) servletContext.getAttribute(users.getUserid()+"");
-            if(temp != null)
-            {
-                servletContext.removeAttribute(users.getUserid()+"");
-                temp.invalidate();
+                session.setAttribute(Constants.USER_SESSION_KEY,users);
+
+                ServletContext servletContext = this.getServletContext();
+                HttpSession temp = (HttpSession) servletContext.getAttribute(users.getUserid()+"");
+                if(temp != null)
+                {
+                    servletContext.removeAttribute(users.getUserid()+"");
+                    temp.invalidate();
+                }
+                servletContext.setAttribute(users.getUserid()+"",session);
+                //使用重定向跳转到登录页面
+                resp.sendRedirect("main.jsp");
+            }else {
+                req.setAttribute(Constants.REQUEST_MSG,"验证码有误，请重新输入");
+                req.getRequestDispatcher("login.jsp").forward(req,resp);
             }
-            servletContext.setAttribute(users.getUserid()+"",session);
-            //使用重定向跳转到登录页面
-            resp.sendRedirect("main.jsp");
+
         } catch (UserNotFoundException e) {
             //因为在service层捕获了异常，得处理
             req.setAttribute("msg",e.getMessage());

@@ -28,7 +28,7 @@ public class UserLoginFilter implements Filter {
         String uri = request.getRequestURI();
         //判断当前请求的是否为 login.jsp 或者 login.do，如果请求的是用户登录
         //的资源那么需要放行。
-        if(uri.indexOf("login.jsp") != -1 || uri.indexOf("login.do") != -1){
+        if(uri.indexOf("login.jsp") != -1 || uri.indexOf("login.do") != -1 || uri.indexOf("validateCode.do") != -1){
             filterChain.doFilter(servletRequest, servletResponse);
         }else{
             HttpSession session = request.getSession();
